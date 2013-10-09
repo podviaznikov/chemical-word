@@ -48,8 +48,9 @@
 (defn matched-words [predicate words]
   (let [filtered (match-words (:term predicate) words)]
     (if (> (count filtered) 0)
-      [{:elements (:elements predicate)
-       :words filtered}]
+      [{:id (:term predicate)
+        :elements (:elements predicate)
+        :words filtered}]
       )))
 
 
@@ -68,7 +69,7 @@
 (defn search-iter [predicate words final-words]
   (let [filtered-words (words-starting-with (:term predicate) words)
         matched (matched-words predicate words)
-        final-words (concat final-words matched)]
+        final-words (conj final-words matched)]
         (if (= (count filtered-words) 0)
           final-words
           (for [el periodic-table]
@@ -80,16 +81,21 @@
 
 
 (defn search [words]
-  (flatten
-    (for [element periodic-table]
-      (let [predicate (new-predicate element)]
-        (search-iter predicate words '()))))
-  )
+  (apply conj #{}
+
+    (filter identity
+      (flatten
+        (for [element periodic-table]
+          (let [predicate (new-predicate element)]
+            (search-iter predicate words nil))))
+      )))
 ;(words-starting-with "BeLi" words)
 
 ;(matched-words "BeLiLi" words)
 
-(search words)
+;(filter identity (search words))
+
+;(count (search words))
 
 
 
